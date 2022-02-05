@@ -1,0 +1,33 @@
+/**
+ *	FIFO Lib
+ * 	By Liyanboy74
+ *	https://github.com/liyanboy74
+ */
+#ifndef _FIFO_H_
+#define _FIFO_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdint.h>
+#include <stdlib.h>
+
+typedef enum
+{
+    FIFO_OK,
+    FIFO_EMPTY,
+    FIFO_BYFFER_OVF,
+    FIFO_MEMORY_ALLOCATION_ERROR,
+}FIFO_State_e;
+
+FIFO_State_e    FIFO_Init(uint32_t Size);
+FIFO_State_e    FIFO_Add(uint8_t Byte);
+FIFO_State_e    FIFO_Read(uint8_t * Byte);
+uint32_t        FIFO_GetLen(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

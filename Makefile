@@ -1,0 +1,4 @@
+default:
+	gcc -Wall -c fifo.c
+example:
+	gcc -Wall example.c fifo.o -o example
