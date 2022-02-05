@@ -9,3 +9,6 @@ run:
 
 all:default example run
 
+clean:
+	rm -rf *.o *.exe
+
