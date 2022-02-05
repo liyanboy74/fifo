@@ -18,6 +18,7 @@ typedef enum
     FIFO_OK,
     FIFO_EMPTY,
     FIFO_BYFFER_OVF,
+    FIFO_BUFFER_OVR,
     FIFO_MEMORY_ALLOCATION_ERROR,
 }FIFO_State_e;
 
@@ -25,6 +26,9 @@ FIFO_State_e    FIFO_Init(uint32_t Size);
 FIFO_State_e    FIFO_Add(uint8_t Byte);
 FIFO_State_e    FIFO_Read(uint8_t * Byte);
 uint32_t        FIFO_GetLen(void);
+uint32_t        FIFO_GetBufferSize(void);
+void            FIFO_Reset(void);
+void            FIFO_DeInit(void);
 
 #ifdef __cplusplus
 }

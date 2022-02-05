@@ -15,10 +15,28 @@ uint8_t *FIFO_RxBuffer;
 
 FIFO_State_e FIFO_Init(uint32_t Size)
 {
+	if(FIFO_Buffer_Size!=0)return FIFO_BUFFER_OVR;
     FIFO_RxBuffer=(uint8_t*)malloc(Size*sizeof(uint8_t));
     if(FIFO_RxBuffer==NULL)return FIFO_MEMORY_ALLOCATION_ERROR;
     else FIFO_Buffer_Size=Size;
     return FIFO_OK;
+}
+
+void FIFO_DeInit(void)
+{
+	free(FIFO_RxBuffer);
+	FIFO_Buffer_Size=0;
+}
+
+void FIFO_Reset(void)
+{
+	FIFO_RxIndex=0;
+	FIFO_RxReadIndex=0;
+}
+
+uint32_t FIFO_GetBufferSize(void)
+{
+	return FIFO_Buffer_Size;
 }
 
 FIFO_State_e FIFO_Add(uint8_t Byte)

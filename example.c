@@ -59,6 +59,5 @@ int main()
     add_data(DATA3,9);
     print_fifo();
 
-
     return 0;
 }
