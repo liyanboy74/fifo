@@ -15,9 +15,9 @@ uint8_t *FIFO_RxBuffer;
 
 FIFO_State_e FIFO_Init(uint32_t Size)
 {
-	if(FIFO_Buffer_Size!=0)return FIFO_BUFFER_OVR;
+	if(FIFO_Buffer_Size!=0)return FIFO_ERROR_BUFFER_OVR;
     FIFO_RxBuffer=(uint8_t*)malloc(Size*sizeof(uint8_t));
-    if(FIFO_RxBuffer==NULL)return FIFO_MEMORY_ALLOCATION_ERROR;
+    if(FIFO_RxBuffer==NULL)return FIFO_ERROR_MEMORY_ALLOCATION;
     else FIFO_Buffer_Size=Size;
     return FIFO_OK;
 }
@@ -44,7 +44,7 @@ FIFO_State_e FIFO_Add(uint8_t Byte)
     FIFO_RxBuffer[FIFO_RxIndex]=Byte;
 	FIFO_RxIndex++;
 	if(FIFO_RxIndex>FIFO_Buffer_Size)FIFO_RxIndex=0;
-	if(FIFO_RxIndex==FIFO_RxReadIndex)return FIFO_BYFFER_OVF;
+	if(FIFO_RxIndex==FIFO_RxReadIndex)return FIFO_ERROR_BYFFER_OVF;
 	return FIFO_OK;
 }
 
@@ -63,6 +63,6 @@ FIFO_State_e FIFO_Read(uint8_t * Byte)
 		if(FIFO_RxReadIndex>FIFO_Buffer_Size)FIFO_RxReadIndex=0;
 		return FIFO_OK;
 	}
-	else return FIFO_EMPTY;
+	else return FIFO_ERROR_EMPTY;
 }
 
