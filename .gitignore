@@ -1,4 +1,7 @@
-.vscode
-build
-*.exe
-*.o
+*
+!*.md
+!*.txt
+!*.c
+!*.h
+!Makefile
+!LICENSE
