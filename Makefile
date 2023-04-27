@@ -1,13 +1,13 @@
 default:
 	gcc -Wall -c fifo.c
 
-example:
-	gcc -Wall example.c fifo.o -o example
+test:
+	gcc -Wall test.c fifo.o -o test
 
 run:
-	@./example
+	@./test
 
-all:default example run
+all:default test run
 
 clean:
 	rm -rf *.o *.exe
