@@ -45,21 +45,26 @@ void print_fifo()
 
 int main()
 {
-    uint8_t *DATA1=(uint8_t*)"Hello ";
-    uint8_t *DATA2=(uint8_t*)"World!\r\n";
-    uint8_t *DATA3=(uint8_t*)"It Works!";
-
     fifo_state_e fifo_s;
 
-    fifo_s=fifo_init(&f,14);
+    uint8_t *DATA1=(uint8_t*)"Hello";
+    uint8_t *DATA2=(uint8_t*)"World!";
+    uint8_t *DATA3=(uint8_t*)"It Works!";
+
+    fifo_s=fifo_init(&f,10);
     check_error_code(fifo_s);
 
-    add_data(DATA1,6);
-    add_data(DATA2,8);
+    add_data(DATA1,strlen((char*)DATA1));
+    add_data((uint8_t*)" ",1);
     print_fifo();
 
-    add_data(DATA3,9);
+    add_data(DATA2,strlen((char*)DATA2));
+    add_data((uint8_t*)"\r\n",2);
     print_fifo();
+
+    add_data(DATA3,strlen((char*)DATA3));
+    print_fifo();
+
 
     return 0;
 }
