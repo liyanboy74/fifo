@@ -65,6 +65,9 @@ int main()
     add_data(DATA3,strlen((char*)DATA3));
     print_fifo();
 
+    add_data((uint8_t*)"\r\n",2);
+    print_fifo();
+
 
     return 0;
 }
