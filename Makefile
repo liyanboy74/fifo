@@ -5,7 +5,7 @@ example:
 	gcc -Wall example.c fifo.o -o example
 
 run:
-	@example
+	@./example
 
 all:default example run
 
