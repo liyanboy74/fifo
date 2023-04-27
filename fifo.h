@@ -13,22 +13,28 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 
-typedef enum
-{
-    FIFO_OK,
-    FIFO_ERROR_EMPTY,
-    FIFO_ERROR_BYFFER_OVF,
-    FIFO_ERROR_BUFFER_OVR,
-    FIFO_ERROR_MEMORY_ALLOCATION
-}FIFO_State_e;
+typedef enum {
+	FIFO_OK,
+	FIFO_ERROR_EMPTY,
+	FIFO_ERROR_BYFFER_OVF,
+	FIFO_ERROR_BUFFER_OVR,
+	FIFO_ERROR_MEMORY_ALLOCATION
+} fifo_state_e;
 
-FIFO_State_e    FIFO_Init(uint32_t Size);
-FIFO_State_e    FIFO_Add(uint8_t Byte);
-FIFO_State_e    FIFO_Read(uint8_t * Byte);
-uint32_t        FIFO_GetLen(void);
-uint32_t        FIFO_GetBufferSize(void);
-void            FIFO_Reset(void);
-void            FIFO_DeInit(void);
+typedef struct {
+	uint32_t fifo_buffer_size;
+	uint32_t fifo_index;
+	uint32_t fifo_read_index;
+	uint8_t *fifo_buffer;
+} fifo_t;
+
+fifo_state_e 	fifo_init(fifo_t *f,uint32_t size);
+fifo_state_e	fifo_add(fifo_t *f,uint8_t b);
+fifo_state_e 	fifo_read(fifo_t *f,uint8_t *b);
+uint32_t 			fifo_get_len(fifo_t *f);
+uint32_t 			fifo_get_buffer_size(fifo_t *f);
+void 					fifo_reset(fifo_t *f);
+void 					fifo_deinit(fifo_t *f);
 
 #ifdef __cplusplus
 }

@@ -9,7 +9,9 @@
 
 #include "fifo.h"
 
-void check_error_code(FIFO_State_e err)
+fifo_t f;
+
+void check_error_code(fifo_state_e err)
 {
     if(err)printf("Error : Code %d\r\n",err);
 }
@@ -19,7 +21,7 @@ void add_data(uint8_t * Data,uint32_t Size)
     uint32_t i;
     for(i=0;i<Size;i++)
     {
-        check_error_code(FIFO_Add(Data[i]));
+        check_error_code(fifo_add(&f,Data[i]));
     }
 }
 
@@ -27,12 +29,12 @@ void print_fifo()
 {
     uint8_t Ch;
     uint32_t i,Len;
-    FIFO_State_e fifo_s;
+    fifo_state_e fifo_s;
 
-    Len=FIFO_GetLen();
+    Len=fifo_get_len(&f);
     for(i=0;i<Len;i++)
     {
-        fifo_s=FIFO_Read(&Ch);
+        fifo_s=fifo_read(&f,&Ch);
         if(fifo_s==FIFO_OK)
         {
             putchar(Ch);
@@ -47,9 +49,9 @@ int main()
     uint8_t *DATA2=(uint8_t*)"World!\r\n";
     uint8_t *DATA3=(uint8_t*)"It Works!";
 
-    FIFO_State_e fifo_s;
+    fifo_state_e fifo_s;
 
-    fifo_s=FIFO_Init(14);
+    fifo_s=fifo_init(&f,14);
     check_error_code(fifo_s);
 
     add_data(DATA1,6);
