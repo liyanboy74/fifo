@@ -1,2 +1,3 @@
 # FIFO C Lib
-Implement circular FIFO buffer in C
+Implement [circular buffer](https://en.wikipedia.org/wiki/Circular_buffer) in C .
+
