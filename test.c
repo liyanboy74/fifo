@@ -51,7 +51,7 @@ int main()
     uint8_t *DATA2=(uint8_t*)"World!";
     uint8_t *DATA3=(uint8_t*)"It Works!";
 
-    fifo_s=fifo_init(&f,10);
+    fifo_s=fifo_init(&f);
     check_error_code(fifo_s);
 
     add_data(DATA1,strlen((char*)DATA1));
