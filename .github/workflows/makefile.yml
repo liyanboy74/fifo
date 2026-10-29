@@ -2,9 +2,9 @@ name: Makefile CI
 
 on:
   push:
-    branches: [ "fix/circular-fifo" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "fix/circular-fifo" ]
+    branches: [ "main" ]
 
 jobs:
   build-and-test:
