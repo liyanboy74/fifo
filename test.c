@@ -119,8 +119,8 @@ static void test_reset_behavior(void)
     fifo_state_e status;
     uint8_t value = 0U;
 
-    status = fifo_init(&fifo, 2U);
-    assert(status == FIFO_OK);
+    fifo_s=fifo_init(&f);
+    check_error_code(fifo_s);
 
     status = fifo_add(&fifo, 'M');
     assert(status == FIFO_OK);

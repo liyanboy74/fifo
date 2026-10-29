@@ -1,4 +1,5 @@
-# FIFO C Library
+# FIFO C Lib
+Implement [circular buffer](https://en.wikipedia.org/wiki/Circular_buffer) in MISRA C
 
 A compact and portable circular FIFO (ring buffer) implementation in C.
 
