@@ -1,73 +1,149 @@
-/**
- *	Example for FIFO Lib
- * 	By Liyanboy74
- *	https://github.com/liyanboy74
- */
-
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "fifo.h"
 
-fifo_t f;
-
-void check_error_code(fifo_state_e err)
+static void test_invalid_usage(void)
 {
-    if(err)printf("Error : Code %d\r\n",err);
+    fifo_t fifo;
+    fifo_state_e status;
+
+    status = fifo_init(NULL, 8U);
+    assert(status == FIFO_ERROR_INVALID_ARGUMENT);
+
+    status = fifo_init(&fifo, 0U);
+    assert(status == FIFO_ERROR_INVALID_ARGUMENT);
+
+    status = fifo_add(NULL, 'x');
+    assert(status == FIFO_ERROR_INVALID_ARGUMENT);
+
+    fifo.buf = NULL;
+    status = fifo_add(&fifo, 'x');
+    assert(status == FIFO_ERROR_INVALID_ARGUMENT);
+
+    fifo_reset(NULL);
+    fifo_deinit(NULL);
 }
 
-void add_data(uint8_t * Data,uint32_t Size)
+static void test_basic_enqueue_dequeue(void)
 {
+    fifo_t fifo;
+    fifo_state_e status;
+    uint8_t value = 0U;
+
+    status = fifo_init(&fifo, 4U);
+    assert(status == FIFO_OK);
+    assert(fifo_is_empty(&fifo));
+    assert(fifo_get_len(&fifo) == 0U);
+    assert(fifo_get_capacity(&fifo) == 4U);
+    assert(fifo_get_buffer_size(&fifo) == 4U);
+
+    status = fifo_add(&fifo, 'A');
+    assert(status == FIFO_OK);
+    status = fifo_add(&fifo, 'B');
+    assert(status == FIFO_OK);
+    status = fifo_add(&fifo, 'C');
+    assert(status == FIFO_OK);
+
+    assert(fifo_get_len(&fifo) == 3U);
+    assert(!fifo_is_empty(&fifo));
+
+    status = fifo_read(&fifo, &value);
+    assert(status == FIFO_OK && value == 'A');
+    status = fifo_read(&fifo, &value);
+    assert(status == FIFO_OK && value == 'B');
+
+    assert(fifo_get_len(&fifo) == 1U);
+
+    status = fifo_add(&fifo, 'D');
+    assert(status == FIFO_OK);
+    status = fifo_read(&fifo, &value);
+    assert(status == FIFO_OK && value == 'C');
+    status = fifo_read(&fifo, &value);
+    assert(status == FIFO_OK && value == 'D');
+    assert(fifo_get_len(&fifo) == 0U);
+    assert(fifo_is_empty(&fifo));
+
+    status = fifo_read(&fifo, &value);
+    assert(status == FIFO_ERROR_EMPTY);
+
+    fifo_deinit(&fifo);
+}
+
+static void test_full_and_wraparound(void)
+{
+    fifo_t fifo;
+    fifo_state_e status;
+    uint8_t value = 0U;
     uint32_t i;
-    for(i=0;i<Size;i++)
-    {
-        check_error_code(fifo_add(&f,Data[i]));
+
+    status = fifo_init(&fifo, 3U);
+    assert(status == FIFO_OK);
+
+    for (i = 0U; i < 3U; ++i) {
+        status = fifo_add(&fifo, (uint8_t)('0' + i));
+        assert(status == FIFO_OK);
     }
+
+    status = fifo_add(&fifo, 'X');
+    assert(status == FIFO_ERROR_OVERFLOW);
+    assert(fifo_get_len(&fifo) == 3U);
+
+    status = fifo_read(&fifo, &value);
+    assert(status == FIFO_OK && value == '0');
+    status = fifo_read(&fifo, &value);
+    assert(status == FIFO_OK && value == '1');
+
+    status = fifo_add(&fifo, 'A');
+    assert(status == FIFO_OK);
+    status = fifo_add(&fifo, 'B');
+    assert(status == FIFO_OK);
+    assert(fifo_get_len(&fifo) == 3U);
+
+    status = fifo_read(&fifo, &value);
+    assert(status == FIFO_OK && value == '2');
+    status = fifo_read(&fifo, &value);
+    assert(status == FIFO_OK && value == 'A');
+    status = fifo_read(&fifo, &value);
+    assert(status == FIFO_OK && value == 'B');
+    assert(fifo_get_len(&fifo) == 0U);
+    assert(fifo_is_empty(&fifo));
+
+    fifo_deinit(&fifo);
 }
 
-void print_fifo()
+static void test_reset_behavior(void)
 {
-    uint8_t Ch;
-    uint32_t i,Len;
-    fifo_state_e fifo_s;
+    fifo_t fifo;
+    fifo_state_e status;
+    uint8_t value = 0U;
 
-    Len=fifo_get_len(&f);
-    for(i=0;i<Len;i++)
-    {
-        fifo_s=fifo_read(&f,&Ch);
-        if(fifo_s==FIFO_OK)
-        {
-            putchar(Ch);
-        }
-        else check_error_code(fifo_s);
-    }
+    status = fifo_init(&fifo, 2U);
+    assert(status == FIFO_OK);
+
+    status = fifo_add(&fifo, 'M');
+    assert(status == FIFO_OK);
+    status = fifo_add(&fifo, 'N');
+    assert(status == FIFO_OK);
+
+    fifo_reset(&fifo);
+    assert(fifo_get_len(&fifo) == 0U);
+    assert(fifo_is_empty(&fifo));
+
+    status = fifo_read(&fifo, &value);
+    assert(status == FIFO_ERROR_EMPTY);
+
+    fifo_deinit(&fifo);
 }
 
-int main()
+int main(void)
 {
-    fifo_state_e fifo_s;
+    test_invalid_usage();
+    test_basic_enqueue_dequeue();
+    test_full_and_wraparound();
+    test_reset_behavior();
 
-    uint8_t *DATA1=(uint8_t*)"Hello";
-    uint8_t *DATA2=(uint8_t*)"World!";
-    uint8_t *DATA3=(uint8_t*)"It Works!";
-
-    fifo_s=fifo_init(&f,10);
-    check_error_code(fifo_s);
-
-    add_data(DATA1,strlen((char*)DATA1));
-    add_data((uint8_t*)" ",1);
-    print_fifo();
-
-    add_data(DATA2,strlen((char*)DATA2));
-    add_data((uint8_t*)"\r\n",2);
-    print_fifo();
-
-    add_data(DATA3,strlen((char*)DATA3));
-    print_fifo();
-
-    add_data((uint8_t*)"\r\n",2);
-    print_fifo();
-
-
+    printf("All FIFO tests passed.\n");
     return 0;
 }
