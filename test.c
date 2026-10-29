@@ -1,73 +1,83 @@
-/**
- *	Example for FIFO Lib
- * 	By Liyanboy74
- *	https://github.com/liyanboy74
- */
-
 #include <stdio.h>
 #include <string.h>
 
 #include "fifo.h"
 
-fifo_t f;
-
-void check_error_code(fifo_state_e err)
+static void check_error(fifo_state_e err)
 {
-    if(err)printf("Error : Code %d\r\n",err);
+    if (err != FIFO_OK) {
+        printf("Error: code %d\r\n", err);
+    }
 }
 
-void add_data(uint8_t * Data,uint32_t Size)
+static void add_data(fifo_t *fifo, const uint8_t *data, uint32_t size)
 {
     uint32_t i;
-    for(i=0;i<Size;i++)
-    {
-        check_error_code(fifo_add(&f,Data[i]));
+
+    for (i = 0U; i < size; ++i) {
+        check_error(fifo_add(fifo, data[i]));
     }
 }
 
-void print_fifo()
+static void print_fifo_contents(fifo_t *fifo)
 {
-    uint8_t Ch;
-    uint32_t i,Len;
-    fifo_state_e fifo_s;
+    uint32_t len = fifo_get_len(fifo);
+    uint32_t i;
+    uint8_t ch;
 
-    Len=fifo_get_len(&f);
-    for(i=0;i<Len;i++)
-    {
-        fifo_s=fifo_read(&f,&Ch);
-        if(fifo_s==FIFO_OK)
-        {
-            putchar(Ch);
+    printf("FIFO contents (%u): ", len);
+    for (i = 0U; i < len; ++i) {
+        fifo_state_e status = fifo_read(fifo, &ch);
+        if (status != FIFO_OK) {
+            check_error(status);
+            return;
         }
-        else check_error_code(fifo_s);
+        putchar(ch);
     }
+    printf("\r\n");
 }
 
-int main()
+int main(void)
 {
-    fifo_state_e fifo_s;
+    fifo_t fifo;
+    fifo_state_e status;
+    const uint8_t *data1 = (const uint8_t *)"Hello";
+    const uint8_t *data2 = (const uint8_t *)"World!";
+    const uint8_t *data3 = (const uint8_t *)"It Works!";
 
-    uint8_t *DATA1=(uint8_t*)"Hello";
-    uint8_t *DATA2=(uint8_t*)"World!";
-    uint8_t *DATA3=(uint8_t*)"It Works!";
+    status = fifo_init(&fifo, 10U);
+    check_error(status);
+    if (status != FIFO_OK) {
+        return 1;
+    }
 
-    fifo_s=fifo_init(&f,10);
-    check_error_code(fifo_s);
+    add_data(&fifo, data1, (uint32_t)strlen((const char *)data1));
+    add_data(&fifo, (const uint8_t *)" ", 1U);
+    print_fifo_contents(&fifo);
 
-    add_data(DATA1,strlen((char*)DATA1));
-    add_data((uint8_t*)" ",1);
-    print_fifo();
+    add_data(&fifo, data2, (uint32_t)strlen((const char *)data2));
+    add_data(&fifo, (const uint8_t *)"\r\n", 2U);
+    print_fifo_contents(&fifo);
 
-    add_data(DATA2,strlen((char*)DATA2));
-    add_data((uint8_t*)"\r\n",2);
-    print_fifo();
+    add_data(&fifo, data3, (uint32_t)strlen((const char *)data3));
+    print_fifo_contents(&fifo);
 
-    add_data(DATA3,strlen((char*)DATA3));
-    print_fifo();
+    add_data(&fifo, (const uint8_t *)"\r\n", 2U);
+    print_fifo_contents(&fifo);
 
-    add_data((uint8_t*)"\r\n",2);
-    print_fifo();
+    printf("Queue length after writes: %u\r\n", fifo_get_len(&fifo));
 
+    while (!fifo_is_empty(&fifo)) {
+        uint8_t value = 0U;
+        status = fifo_read(&fifo, &value);
+        if (status != FIFO_OK) {
+            check_error(status);
+            break;
+        }
+        putchar(value);
+    }
+    printf("\r\n");
 
+    fifo_deinit(&fifo);
     return 0;
 }

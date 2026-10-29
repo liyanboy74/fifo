@@ -1,64 +1,120 @@
-/**
- *	FIFO Lib
- * 	By Liyanboy74
- *	https://github.com/liyanboy74
- */
-
-#include <stdint.h>
-#include <stdlib.h>
-
 #include "fifo.h"
 
-fifo_state_e fifo_init(fifo_t *f,uint32_t size)
+fifo_state_e fifo_init(fifo_t *f, uint32_t size)
 {
-    f->end=0;
-    f->start=0;
-    f->size=0;
-    f->buf=(uint8_t*)malloc(size*sizeof(uint8_t));
-    if(f->buf==NULL)return FIFO_ERROR_MEMORY_ALLOCATION;
-    else f->size=size;
-    return FIFO_OK;
-}
+    if (f == NULL) {
+        return FIFO_ERROR_INVALID_ARGUMENT;
+    }
 
-void fifo_deinit(fifo_t *f)
-{
-    free(f->buf);
-    f->size=0;
+    if (size == 0U) {
+        return FIFO_ERROR_INVALID_ARGUMENT;
+    }
+
+    f->buf = (uint8_t *)malloc((size_t)size * sizeof(uint8_t));
+    if (f->buf == NULL) {
+        return FIFO_ERROR_MEMORY_ALLOCATION;
+    }
+
+    f->size = size;
+    f->head = 0U;
+    f->tail = 0U;
+    f->count = 0U;
+
+    return FIFO_OK;
 }
 
 void fifo_reset(fifo_t *f)
 {
-    f->end=0;
-    f->start=0;
+    if (f == NULL) {
+        return;
+    }
+
+    f->head = 0U;
+    f->tail = 0U;
+    f->count = 0U;
 }
 
-uint32_t fifo_get_buffer_size(fifo_t *f)
+void fifo_deinit(fifo_t *f)
 {
+    if (f == NULL) {
+        return;
+    }
+
+    free(f->buf);
+    f->buf = NULL;
+    f->size = 0U;
+    f->head = 0U;
+    f->tail = 0U;
+    f->count = 0U;
+}
+
+uint32_t fifo_get_len(const fifo_t *f)
+{
+    if (f == NULL) {
+        return 0U;
+    }
+
+    return f->count;
+}
+
+uint32_t fifo_get_buffer_size(const fifo_t *f)
+{
+    return fifo_get_capacity(f);
+}
+
+uint32_t fifo_get_capacity(const fifo_t *f)
+{
+    if (f == NULL) {
+        return 0U;
+    }
+
     return f->size;
 }
 
-fifo_state_e fifo_add(fifo_t *f,uint8_t b)
+bool fifo_is_empty(const fifo_t *f)
 {
-    f->buf[f->end++]=b;
-    f->end%=f->size;
-    if(f->end==f->start)return FIFO_ERROR_BYFFER_OVF;
+    if (f == NULL) {
+        return true;
+    }
+
+    return f->count == 0U;
+}
+
+fifo_state_e fifo_add(fifo_t *f, uint8_t b)
+{
+    if (f == NULL || f->buf == NULL) {
+        return FIFO_ERROR_INVALID_ARGUMENT;
+    }
+
+    if (f->count >= f->size) {
+        return FIFO_ERROR_OVERFLOW;
+    }
+
+    f->buf[f->tail] = b;
+    f->tail = (f->tail + 1U) % f->size;
+    f->count++;
+
     return FIFO_OK;
 }
 
-uint32_t fifo_get_len(fifo_t *f)
+fifo_state_e fifo_read(fifo_t *f, uint8_t *b)
 {
-    if(f->end>=f->start)return f->end - f->start;
-    else return f->size-(f->start - f->end);
-}
-
-fifo_state_e fifo_read(fifo_t *f,uint8_t *b)
-{
-    if(fifo_get_len(f))
-    {
-        *b=f->buf[f->start++];
-        f->start%=f->size;
-        return FIFO_OK;
+    if (f == NULL || b == NULL) {
+        return FIFO_ERROR_INVALID_ARGUMENT;
     }
-    else return FIFO_ERROR_EMPTY;
-}
 
+    if (f->buf == NULL || f->count == 0U) {
+        return FIFO_ERROR_EMPTY;
+    }
+
+    *b = f->buf[f->head];
+    f->head = (f->head + 1U) % f->size;
+    f->count--;
+
+    if (f->count == 0U) {
+        f->head = 0U;
+        f->tail = 0U;
+    }
+
+    return FIFO_OK;
+}

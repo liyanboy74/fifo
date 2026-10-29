@@ -1,14 +1,15 @@
-default:
-	gcc -Wall -c fifo.c
+default: fifo.o
 
-test:
-	gcc -Wall test.c fifo.o -o test
+fifo.o: fifo.c fifo.h
+	gcc -Wall -Wextra -std=c11 -c fifo.c -o fifo.o
 
-run:
-	@./test
+test: fifo.o
+	gcc -Wall -Wextra -std=c11 test.c fifo.o -o test
 
-all:default test run
+run: test
+	./test
+
+all: test run
 
 clean:
-	rm -rf *.o *.exe
-
+	rm -f *.o test
